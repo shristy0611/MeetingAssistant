@@ -119,4 +119,9 @@ temp/
 # Security and keys
 *.key
 *.pem
-secrets/ 
+secrets/
+
+# Redis
+dump.rdb
+*.rdb
+redis-*.aof 
