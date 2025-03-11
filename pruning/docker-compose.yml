@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  pruning:
+    build:
+      context: ..
+      dockerfile: pruning/Dockerfile
+    image: amptalk-whisper-pruning:latest
+    container_name: amptalk-pruning
+    volumes:
+      # Mount pruning directory
+      - ./:/app
+      # Mount model cache directory to share downloaded models between runs
+      - ../models:/app/models
+      # Mount output directory to save pruned models
+      - ../output:/app/output
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TORCH_HOME=/app/models/torch
+      - TRANSFORMERS_CACHE=/app/models/cache
+      - HF_DATASETS_CACHE=/app/models/datasets
+    # Override the default command if needed
+    command: ["python", "scripts/prune_whisper.py", "--config", "configs/default.json"]
+    # Use host network mode for better performance (Linux only)
+    # network_mode: "host"
+    # Alternatively, use bridge mode for compatibility
+    network_mode: "bridge"
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 16G
+        reservations:
+          memory: 4G 

@@ -1,0 +1,106 @@
+name: AMPTALK Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  code-quality:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install ruff black pytest
+        pip install -r requirements.txt
+        
+    - name: Run Ruff
+      run: ruff check .
+      
+    - name: Run Black
+      run: black --check .
+      
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-asyncio pytest-cov
+        pip install -r requirements.txt
+        
+    - name: Run unit tests
+      run: |
+        pytest tests/core/ tests/agents/ --cov=src --cov-report=xml -v
+        
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: true
+        
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-asyncio
+        pip install -r requirements.txt
+        
+    - name: Run integration tests
+      run: |
+        pytest tests/integration/ -v -m "integration"
+        
+  benchmarks:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest pytest-asyncio pytest-benchmark
+        pip install -r requirements.txt
+        
+    - name: Run benchmarks
+      run: |
+        pytest tests/benchmark/ -v -m "benchmark"
+        
+    - name: Store benchmark results
+      uses: actions/upload-artifact@v3
+      with:
+        name: benchmark-results
+        path: .benchmarks/ 

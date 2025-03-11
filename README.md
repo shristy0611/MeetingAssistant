@@ -1,65 +1,205 @@
-# AMPTALK: Advanced Meeting Processing Transcription & Analysis with Local Knowledge
+# AMPTALK: Multi-Agent AI Framework for Meeting Transcription
 
-## Overview
+AMPTALK is a privacy-focused multi-agent system designed for meeting transcription and analysis. It enables real-time transcription, summarization, and insight extraction from audio with minimal data exposure.
 
-AMPTALK is a state-of-the-art, fully offline, multi-agent AI framework designed for meeting transcription and analysis. The system ensures data privacy by processing all information locally, without relying on external APIs.
+## Features
 
-### Key Features
+- **Privacy-First Design**: Process all data locally without sending it to external servers
+- **Multi-Agent Architecture**: Specialized agents work together to handle different tasks
+- **Real-Time Processing**: Process audio streams in real-time with low latency
+- **Optimized for Edge**: Designed to run efficiently on local devices
+- **Modular and Extensible**: Easy to add new agents or functionality
 
-- **Fully Offline Operation**: All processing occurs locally on edge devices
-- **Real-Time Transcription**: Accurate transcription in English and Japanese
-- **Advanced Analysis**:
-  - Pain point detection
-  - Sentiment analysis
-  - Summarization
-  - Topic detection
-  - Intent recognition
-  - Entity detection
-- **Speaker Diarization**: Accurately attribute speech to individual speakers
-- **Smart Formatting**: Enhance readability with punctuation and formatting
-- **Multilingual Support**: Full support for English and Japanese
+### Core Framework
+- **Robust Agent Architecture**: Flexible and extensible agent-based system
+- **Asynchronous Execution**: Efficient processing of concurrent tasks
+- **Error Recovery**: Sophisticated error handling with retry mechanisms
+- **Memory Management**: Smart caching and memory optimization
+- **State Persistence**: Persistent agent state across sessions
 
-## Project Structure
+### Whisper Integration
+- **Transcription Agent**: Specialized agent for audio transcription
+- **Model Caching**: Efficient model loading and unloading
+- **Edge Optimization**: Deployment optimizations for resource-constrained devices
+  - ONNX conversion
+  - Quantization (INT8, FP16, INT4)
+  - Layer Fusion: Combines consecutive operations for faster inference
+  - Operator fusion
+  - Knowledge distillation
+- **Mobile Framework Export**: Deploy models to mobile platforms
+  - TensorFlow Lite export for Android
+  - Core ML export for iOS/macOS
+  - Model size optimization
+  - Mobile-specific optimizations
 
-- `src/`: Source code for the multi-agent system
-  - `agents/`: Individual AI agents for specific tasks
-  - `models/`: AI models optimized for edge deployment
-  - `utils/`: Utility functions and helper modules
-- `docker/`: Docker configuration for containerized deployment
-- `docs/`: Project documentation
-- `tests/`: Test suites for system validation
+### Monitoring and Performance
+- **Real-time Metrics**: Comprehensive performance monitoring
+- **OpenTelemetry Integration**: Industry-standard observability
+- **Prometheus Exporting**: Metrics collection for dashboards
 
-## Technology Stack
+## System Architecture
 
-- **Core**: Python 3.11+
-- **Speech Recognition**: Whisper model (OpenAI)
-- **NLP**: Spark NLP and custom modules
-- **Deployment**: Docker containers optimized for edge devices
-- **Data Storage**: Local SQLite database
+AMPTALK uses a multi-agent architecture where specialized agents communicate through a message-passing system:
 
-## Development Roadmap
+1. **Audio Processing Agent**: Handles audio input, preprocessing, and segmentation
+2. **Transcription Agent**: Converts audio to text using optimized Whisper models
+3. **NLP Processing Agent**: Performs language analysis, entity detection, and intent recognition
+4. **Summarization Agent**: Generates concise summaries of meeting content
+5. **Orchestrator**: Coordinates the agents and manages system resources
 
-1. **Research and Planning** (4 weeks)
-2. **Model Development and Optimization** (8 weeks)
-3. **System Integration and Testing** (6 weeks)
-4. **User Interface Development** (5 weeks)
-5. **Deployment and Maintenance** (4 weeks)
+## Installation
 
-## Getting Started
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/amptalk.git
+cd amptalk
 
-*Detailed setup instructions will be added as development progresses.*
+# Create a virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-## Security and Privacy
+# Install dependencies
+pip install -r requirements.txt
+```
 
-- All data is processed locally without external transmission
-- AES-256 encryption for data at rest
-- TLS encryption for any necessary data transfer
-- Role-based access control for system operations
+## Usage
+
+### Running the Demo
+
+```bash
+# Run the basic demo
+python src/run_demo.py
+
+# Run with a custom configuration
+python src/run_demo.py --config path/to/config.json
+```
+
+### Example Configuration
+
+Create a JSON configuration file to customize the system:
+
+```json
+{
+  "audio_agent": {
+    "audio": {
+      "sample_rate": 16000,
+      "chunk_duration_ms": 1000,
+      "vad_threshold": 0.3
+    }
+  },
+  "transcription_agent": {
+    "whisper": {
+      "model_size": "large-v3-turbo",
+      "device": "cuda",
+      "language": "en"
+    }
+  }
+}
+```
+
+## Model Pruning
+
+AMPTALK includes a model pruning toolkit in the `pruning/` directory to optimize models for edge deployment:
+
+```bash
+# Run the pruning script
+cd pruning
+./prune.sh --model large-v3 --target-sparsity 0.6
+```
+
+## Development
+
+### Project Structure
+
+```
+amptalk/
+├── src/
+│   ├── agents/              # Specialized agent implementations
+│   ├── core/
+│   │   ├── framework/       # Core multi-agent framework
+│   │   └── utils/           # Common utilities
+│   └── run_demo.py          # Demo application
+├── pruning/                 # Model pruning tools
+│   ├── scripts/             # Pruning scripts
+│   ├── configs/             # Pruning configurations
+│   └── models/              # Model storage
+├── requirements.txt         # Dependencies
+└── README.md                # This file
+```
+
+### Creating a New Agent
+
+Agents inherit from the `Agent` base class in `src/core/framework/agent.py`:
+
+```python
+from src.core.framework.agent import Agent
+
+class MyCustomAgent(Agent):
+    def __init__(self, agent_id=None, name="MyCustomAgent", config=None):
+        super().__init__(agent_id, name)
+        # Initialize your agent
+        
+    async def process_message(self, message):
+        # Implement your message handling logic
+        pass
+```
 
 ## License
 
-*To be determined*
+This project is licensed under the MIT License - see the LICENSE file for details.
 
----
+## Acknowledgments
 
-Developed by Shristyverse LLC 
+- OpenAI for the Whisper model
+- The open-source community for various audio processing tools
+- All contributors to this project
+
+## Getting Started
+
+### Edge Optimization Example
+
+For optimizing and running Whisper models on edge devices:
+
+```bash
+# Run the edge optimization demo
+python examples/edge_optimization_demo.py --model-size tiny --optimization-level MEDIUM --compare
+```
+
+This will:
+1. Optimize a Whisper model using ONNX and quantization
+2. Compare performance with the non-optimized model
+3. Run a transcription using both models
+
+For more details, see the [Edge Optimization Documentation](docs/edge_optimization.md).
+
+### INT4 Quantization Example
+
+For ultra-low precision quantization with AWQ:
+
+```bash
+# Run the INT4 quantization demo
+python examples/int4_quantization_demo.py --model-size tiny
+```
+
+This will:
+1. Quantize a Whisper model to INT4 precision using AWQ
+2. Quantize the same model to INT8 precision for comparison
+3. Compare transcription performance and accuracy between original, INT4, and INT8 models
+
+INT4 quantization can reduce model size by up to 8x while maintaining good transcription quality.
+
+### Mobile Framework Export Example
+
+For exporting Whisper models to mobile frameworks:
+
+```bash
+# Run the mobile optimization demo
+python examples/mobile_optimization_demo.py
+```
+
+This will:
+1. Export a Whisper model to TensorFlow Lite format (for Android)
+2. Export a Whisper model to Core ML format (for iOS/macOS, only on macOS systems)
+3. Demonstrate transcription using the exported models
+
+For detailed information on mobile deployment, see the [Mobile Deployment Guide](docs/mobile_deployment.md). 

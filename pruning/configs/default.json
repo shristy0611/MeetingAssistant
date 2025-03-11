@@ -1,0 +1,63 @@
+{
+    "model": {
+        "name": "openai/whisper-large-v3-turbo",
+        "cache_dir": "../models/cache"
+    },
+    "pruning": {
+        "method": "magnitude",
+        "sparsity": 0.3,
+        "target_modules": ["encoder.layers", "decoder.layers"],
+        "excluded_modules": ["encoder.embed_positions", "decoder.embed_tokens"],
+        "pruning_pattern": "unstructured",
+        "pruning_frequency": 100,
+        "pruning_schedule": "exponential",
+        "pruning_iterations": 5,
+        "weight_importance_method": "magnitude",
+        "apply_outlier_weighting": true,
+        "outlier_detection_method": "owl",
+        "outlier_hyper_lambda": 0.08,
+        "outlier_hyper_m": 5
+    },
+    "evaluation": {
+        "datasets": [
+            {
+                "name": "librispeech",
+                "split": "test-clean",
+                "subset": "clean",
+                "max_samples": 20
+            },
+            {
+                "name": "common_voice",
+                "split": "test",
+                "language": "en",
+                "max_samples": 20
+            }
+        ],
+        "metrics": ["wer", "character_error_rate"],
+        "batch_size": 8
+    },
+    "optimization": {
+        "quantization": {
+            "enabled": true,
+            "bits": 8,
+            "method": "dynamic"
+        },
+        "compile": {
+            "enabled": true,
+            "mode": "reduce-overhead"
+        }
+    },
+    "output": {
+        "dir": "../output",
+        "save_model": true,
+        "log_to_tensorboard": true,
+        "save_pruned_checkpoints": true,
+        "export_onnx": true
+    },
+    "hardware": {
+        "device": "auto",
+        "use_mps": true,
+        "precision": "float16",
+        "cpu_threads": 8
+    }
+} 

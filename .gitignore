@@ -1,12 +1,8 @@
-# Byte-compiled / optimized / DLL files
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
-
-# Distribution / packaging
 .Python
 build/
 develop-eggs/
@@ -24,36 +20,81 @@ wheels/
 .installed.cfg
 *.egg
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Testing
 .coverage
-.coverage.*
-.cache
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Project specific
+data/
+models/
+*.log
+.env
+output/
+logs/
+
+# Docker
+.docker/
+
+# Documentation
+docs/_build/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Local development
+local_settings.py
+db.sqlite3
+*.db
+
+# Media files
+*.mp3
+*.wav
+*.flac
+*.ogg
+*.m4a
+
+# Model files
+*.pt
+*.pth
+*.onnx
+*.tflite
+*.mlmodel
+
+# Unit test / coverage reports
 nosetests.xml
 coverage.xml
 *.cover
 .hypothesis/
-.pytest_cache/
-
-# Jupyter Notebook
-.ipynb_checkpoints
 
 # pyenv
 .python-version
 
 # Environments
-.env
-.venv
-env/
-venv/
-ENV/
 env.bak/
 venv.bak/
 
 # IDE files
-.idea/
-.vscode/
 *.swp
 *.swo
 
@@ -61,16 +102,8 @@ venv.bak/
 .DS_Store
 
 # Project specific
-*.log
-models/
-data/audio/
-data/processed/
 *.sqlite
-*.db
 *.db-journal
-
-# Docker
-.docker/
 
 # Temporary files
 tmp/

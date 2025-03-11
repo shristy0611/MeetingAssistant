@@ -1,0 +1,82 @@
+# Stage 1: Builder
+FROM nvidia/cuda:12.1.0-devel-ubuntu22.04 as builder
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONPATH="/app:$PYTHONPATH" \
+    TORCH_CUDA_ARCH_LIST="7.0 7.5 8.0 8.6" \
+    FORCE_CUDA="1"
+
+# Install Python and build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3.11-dev \
+    python3-pip \
+    build-essential \
+    git \
+    curl \
+    pkg-config \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install dependencies with CUDA support
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt \
+    && pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Stage 2: Runtime
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
+
+# Set environment variables
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONPATH="/app:$PYTHONPATH" \
+    AMPTALK_ENV="production" \
+    NVIDIA_VISIBLE_DEVICES="all" \
+    NVIDIA_DRIVER_CAPABILITIES="compute,utility"
+
+# Install Python and runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3-pip \
+    ffmpeg \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create non-root user
+RUN useradd -m -u 1000 amptalk
+
+# Set working directory
+WORKDIR /app
+
+# Copy wheels from builder
+COPY --from=builder /app/wheels /wheels
+
+# Install dependencies
+RUN pip install --no-cache /wheels/*
+
+# Copy application code
+COPY src/ /app/src/
+COPY scripts/ /app/scripts/
+COPY configs/ /app/configs/
+
+# Set ownership
+RUN chown -R amptalk:amptalk /app
+
+# Switch to non-root user
+USER amptalk
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
+    CMD python3 -c "from src.core.health_check import check_health; check_health()"
+
+# Default command
+CMD ["python3", "-m", "src.main"] 

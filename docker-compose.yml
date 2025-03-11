@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # Development environment
+  dev:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    image: amptalk-dev:latest
+    container_name: amptalk-dev
+    volumes:
+      - ./:/app
+      - ./models:/app/models
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TORCH_HOME=/app/models/torch
+      - TRANSFORMERS_CACHE=/app/models/cache
+      - HF_DATASETS_CACHE=/app/models/datasets
+    ports:
+      - "8000:8000"  # FastAPI
+      - "6006:6006"  # TensorBoard
+    command: ["python", "-m", "src.main"]
+    deploy:
+      resources:
+        limits:
+          memory: 8G
+        reservations:
+          memory: 2G
+
+  # Production environment
+  prod:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.prod
+    image: amptalk-prod:latest
+    container_name: amptalk-prod
+    volumes:
+      - ./models:/app/models
+      - ./data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - MODEL_SIZE=base
+      - USE_MPS=true
+      - LANGUAGE=auto
+    ports:
+      - "5000:5000"  # API endpoint
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  # Model serving (optimized for inference)
+  serve:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.serve
+    image: amptalk-serve:latest
+    container_name: amptalk-serve
+    volumes:
+      - ./models:/app/models
+      - ./output:/app/output
+    environment:
+      - MODEL_PATH=/app/output/optimized_model
+      - PORT=8080
+      - MAX_AUDIO_LENGTH=600
+    ports:
+      - "8080:8080"  # Serving API
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+
+  # Separate service for model pruning (for reference)
+  prune:
+    build: 
+      context: .
+      dockerfile: pruning/Dockerfile
+    image: amptalk-pruning:latest
+    profiles: ["tools"]  # Only run when explicitly specified
+    volumes:
+      - ./pruning:/app
+      - ./models:/app/models
+      - ./output:/app/output
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: ["python", "scripts/prune_whisper.py", "--config", "configs/default.json"] 

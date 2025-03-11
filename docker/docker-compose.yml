@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  # Base service configuration
+  amptalk-base: &base
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.base
+    environment:
+      - AMPTALK_ENV=${AMPTALK_ENV:-production}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    volumes:
+      - ../data:/app/data
+      - ../models:/app/models
+    networks:
+      - amptalk-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "from src.core.health_check import check_health; check_health()"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 5s
+
+  # GPU-enabled service
+  amptalk-gpu:
+    <<: *base
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.gpu
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # API service
+  api:
+    <<: *base
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    command: ["python", "-m", "src.api.main"]
+
+  # Worker service
+  worker:
+    <<: *base
+    environment:
+      - WORKER_CONCURRENCY=${WORKER_CONCURRENCY:-2}
+    command: ["python", "-m", "src.worker.main"]
+
+  # Monitoring service
+  monitoring:
+    <<: *base
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+      - "${GRAFANA_PORT:-3000}:3000"
+    environment:
+      - PROMETHEUS_PORT=9090
+      - GRAFANA_PORT=3000
+    command: ["python", "-m", "src.monitoring.main"]
+
+  # Redis for caching and message queue
+  redis:
+    image: redis:7-alpine
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis-data:/data
+    networks:
+      - amptalk-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # Prometheus for metrics
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    volumes:
+      - ../configs/prometheus:/etc/prometheus
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - amptalk-net
+    restart: unless-stopped
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:10.0.3
+    volumes:
+      - ../configs/grafana:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      - amptalk-net
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+volumes:
+  redis-data:
+  prometheus-data:
+  grafana-data:
+
+networks:
+  amptalk-net:
+    driver: bridge 

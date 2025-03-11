@@ -1,10 +1,58 @@
 # Core dependencies
-numpy==1.24.3
-torch==2.0.1
-torchaudio==2.0.2
-transformers==4.30.2
-openai-whisper==20230314
-pydub==0.25.1
+numpy>=1.21.0
+asyncio>=3.4.3
+typing_extensions>=4.0.0
+aiofiles>=23.1.0
+psutil>=5.9.0
+pydantic>=2.0.0
+aiohttp>=3.8.0
+async-timeout>=4.0.0
+
+# OpenTelemetry monitoring
+opentelemetry-api>=1.19.0
+opentelemetry-sdk>=1.19.0
+opentelemetry-exporter-prometheus>=1.19.0
+prometheus-client>=0.17.0
+
+# Audio processing
+# These are now used in the implementation
+librosa>=0.9.0
+soundfile>=0.10.3
+pydub>=0.25.1
+pyav>=11.0.0  # For audio decoding in faster-whisper
+
+# Deep learning and models
+# These are now used in the implementation
+torch>=2.0.0
+torchaudio>=2.0.0
+transformers>=4.36.0
+faster-whisper>=0.9.0
+ctranslate2>=3.24.0  # Required by faster-whisper
+
+# Utilities
+python-json-logger>=2.0.4
+tqdm>=4.64.0
+pyyaml>=6.0
+
+# Testing
+pytest>=7.0.0
+pytest-asyncio>=0.18.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.3.1
+pytest-timeout>=2.1.0
+coverage>=7.2.0
+
+# Code quality
+black>=23.1.0
+ruff>=0.1.0
+mypy>=1.0.0
+
+# Development tools
+pre-commit>=3.3.0
+pdm>=2.10.0
+
+# For development and testing
+isort>=5.10.0
 
 # NLP and text processing
 spark-nlp==4.4.2
@@ -19,16 +67,29 @@ uvicorn==0.22.0
 websockets==11.0.3
 
 # Audio processing
-librosa==0.10.0.post2
-soundfile==0.12.1
 pyaudioanalysis==0.3.14
 webrtcvad==2.0.10
 
 # Edge optimization
-onnx==1.14.0
-onnxruntime==1.15.1
-tensorflow-lite==2.12.0
-optimum==1.8.7
+onnx>=1.14.0
+onnxruntime>=1.15.0
+optimum>=1.12.0
+huggingface-hub>=0.19.0
+
+# Additional edge optimization dependencies
+onnxruntime-extensions>=0.9.0  # For all-in-one models with custom ops
+olive-ai>=0.4.0  # Optional - Microsoft's Olive tool for model optimization
+optimum-cli>=1.12.0  # Optional - Command-line interface for optimum
+
+# INT4 quantization dependencies
+autoawq>=0.2.0  # For INT4 quantization using AWQ algorithm
+# Note: If autoawq fails to install, you can try llm-awq as an alternative
+
+# Mobile framework export dependencies
+tensorflow>=2.14.0  # Required for TensorFlow Lite conversion
+tensorflow-hub>=0.15.0  # For TensorFlow model handling
+# Note: For Apple Silicon Macs, use tensorflow-macos instead
+coremltools>=7.0.0  # Required for Core ML conversion
 
 # Security and privacy
 cryptography==41.0.1
@@ -45,12 +106,80 @@ sqlite-utils==3.33
 docker==6.1.2
 
 # Testing
-pytest==7.3.1
 pytest-benchmark==4.0.0
 
 # Development tools
-black==23.3.0
-isort==5.12.0
-mypy==1.3.0
 flake8==6.0.0
-bandit==1.7.5 
+bandit==1.7.5
+
+# Model inference
+torch>=2.0.0
+transformers>=4.36.0
+
+# Performance monitoring
+psutil>=5.9.0
+opentelemetry-api>=1.19.0
+opentelemetry-sdk>=1.19.0
+opentelemetry-exporter-prometheus>=1.19.0
+prometheus-client>=0.17.0
+
+# Optional dependencies
+faster-whisper>=0.9.0  # For CTranslate2 backend (optional)
+
+# Inter-agent communication enhancements
+msgpack>=1.0.5            # MessagePack serialization (efficient binary serialization)
+python-snappy>=0.6.1      # Snappy compression (optional, fast compression)
+lz4>=4.3.2                # LZ4 compression (optional, very fast compression)
+protobuf>=4.23.4          # Protocol Buffers (optional, for schema-based serialization)
+websockets>=11.0.3        # WebSocket support for distributed agent communication
+aiohttp>=3.8.0            # HTTP client/server for agent communication
+uvloop>=0.17.0            # Optional asyncio event loop replacement for better performance
+pyzmq>=25.1.1             # ZeroMQ for efficient socket communication
+
+# Added from the code block
+torch>=2.2.0
+transformers>=4.38.0
+psutil>=5.9.8
+pytest>=8.0.0
+pytest-asyncio>=0.23.5
+openai-whisper>=20231117
+
+# Model pruning dependencies
+torch>=2.2.0
+numpy>=1.24.0
+pytest>=8.0.0
+pytest-asyncio>=0.23.5
+
+# Speculative decoding dependencies
+torch>=2.2.0
+numpy>=1.24.0
+time>=0.0.1
+pytest>=8.0.0
+dataclasses>=0.8
+
+# NLP Processing dependencies
+transformers>=4.38.0
+sentence-transformers>=2.5.0
+bertopic>=0.16.0
+umap-learn>=0.5.5
+hdbscan>=0.8.33
+scikit-learn>=1.4.0
+
+# Sentiment Analysis Agent dependencies
+transformers>=4.38.0
+torch>=2.2.0
+numpy>=1.24.0
+sentencepiece>=0.1.99
+accelerate>=0.25.0
+
+# Summarization Agent dependencies
+transformers>=4.36.0
+torch>=2.1.0
+numpy>=1.24.0
+sentence-transformers>=2.2.2
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-mock>=3.10.0
+
+# Added from the code block
+numpy>=1.24.0 
